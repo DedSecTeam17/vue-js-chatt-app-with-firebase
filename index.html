@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="app">
+
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-10 offset-2">
+                <div class="card">
+
+                    <div class="card-header">
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <form>
+                            <div class="form-group">
+                                <label for="#titile">Title</label>
+                                <input type="text" class="form-control" id="#titile" v-model="title">
+                            </div>
+                            <div class="form-group">
+                                <label for="#body">Body</label>
+                                <textarea type="text" class="form-control" id="#body" v-model="body"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-info btn-block btn-lg" @click="add">Add</button>
+                        </form>
+
+
+                    </div>
+
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div>
+                                <div v-for="m,key in messages" class="card mt-5">
+                                    <div class="card-header">
+                                        <h3>{{m.title}}</h3>
+
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{m.body}}</p>
+
+                                        <button type="button" class="btn btn-xs btn-danger" @click="deleteMessages(m)">
+                                            Delete
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-success"  data-toggle="modal" data-target="#exampleModal">
+                                            Update
+                                        </button>
+
+
+                                    </div>
+                                    <div class="card-footer">
+
+                                    </div>
+
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form>
+                                                        <div class="form-group">
+                                                            <label for="#update_titile">Title</label>
+                                                            <input type="text" class="form-control" id="#update_titile" v-model="title">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="#update_body">Body</label>
+                                                            <textarea type="text" class="form-control" id="#update_body" v-model="body"></textarea>
+                                                        </div>
+                                                        <button type="button" class="btn btn-info btn-block btn-lg" @click="updateMessages(m)">Update</button>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+<!--Model area -->
+
+
+
+<script>
+
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyAgUV4LGLIv4g5i5D5_9YG5HAfylLRZHgQ",
+        authDomain: "vue-firebase-ab7f5.firebaseapp.com",
+        databaseURL: "https://vue-firebase-ab7f5.firebaseio.com",
+        projectId: "vue-firebase-ab7f5",
+        storageBucket: "vue-firebase-ab7f5.appspot.com",
+        messagingSenderId: "131242002575"
+    };
+    firebase.initializeApp(config);
+
+    const database = firebase.database();
+
+
+    const mDataRef = database.ref('posts');
+
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            name: 'mohammed',
+            messages: [],
+            title: '',
+            body: ''
+        }, created() {
+            mDataRef.on('child_added', snapshot =>
+                this.messages.push({...snapshot.val(), ID: snapshot.key})
+            );
+
+            mDataRef.on('child_removed', snapshot => {
+
+
+                    const mymessage = this.messages.find(message => message.ID === snapshot.key);
+
+                    const index = this.messages.indexOf(mymessage);
+
+                    this.messages.splice(index, 1);
+
+                }
+
+            );
+
+            mDataRef.on('child_changed', snapshot => {
+
+                this.messages.push({...snapshot.val(), ID: snapshot.key})
+
+                    const mymessage = this.messages.find(message => message.ID === snapshot.key);
+
+                    const index = this.messages.indexOf(mymessage);
+
+                    this.messages.splice(index, 1);
+
+
+
+
+
+                }
+
+            );
+
+
+        },
+        methods: {
+            add() {
+                mDataRef.push().set({title: this.title, body: this.body});
+            },
+            deleteMessages(message) {
+                mDataRef.child(message.ID).remove();
+
+            }
+            ,updateMessages(message){
+                mDataRef.child(message.ID).update({title:this.title,body:this.body});
+
+
+
+
+
+
+
+            }
+        }
+    });
+
+
+</script>
+
+
+</body>
+</html>
